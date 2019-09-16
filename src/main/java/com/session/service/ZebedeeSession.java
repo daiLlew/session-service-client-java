@@ -2,7 +2,7 @@ package com.session.service;
 
 import java.util.Date;
 
-class SessionImpl implements Session {
+public class ZebedeeSession implements Session {
 
     /**
      * The ID of this session.
