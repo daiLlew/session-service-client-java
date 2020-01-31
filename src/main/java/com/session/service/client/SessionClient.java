@@ -35,4 +35,15 @@ public interface SessionClient {
      * @throws SessionClientException for any errors while attempting to get the session.
      */
     Session getSessionByEmail(String email) throws SessionClientException;
+
+    /**
+     * Check if a {@link Session} with the provided ID exists.
+     *
+     * @param sessionID the ID of the session to look for.
+     * @return true if the session exists, false if not.
+     * @throws SessionClientException for any errors while attempting to check the session.
+     */
+    boolean sessionExists(String sessionID) throws SessionClientException;
+
+    boolean flushAllSessions() throws SessionClientException;
 }
