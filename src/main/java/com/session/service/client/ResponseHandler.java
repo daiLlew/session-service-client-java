@@ -4,7 +4,7 @@ import com.session.service.error.SessionClientException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 @FunctionalInterface
-public interface StatusChecker {
+public interface ResponseHandler<T> {
 
-    void check(CloseableHttpResponse response) throws SessionClientException;
+    T handleResponse(CloseableHttpResponse response) throws SessionClientException;
 }

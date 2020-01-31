@@ -45,5 +45,5 @@ public interface SessionClient {
      */
     boolean sessionExists(String sessionID) throws SessionClientException;
 
-    boolean flushAllSessions() throws SessionClientException;
+    boolean clear() throws SessionClientException;
 }

@@ -1,16 +1,14 @@
 package com.session.service.client;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.session.service.Session;
 import com.session.service.ZebedeeSession;
 import com.session.service.entities.CreateNewSession;
 import com.session.service.entities.SessionCreated;
 import com.session.service.entities.SimpleMessage;
 import com.session.service.error.SessionClientException;
-import com.session.service.json.SessionDateFormatter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -18,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Date;
+import java.io.InputStreamReader;
 
 import static java.text.MessageFormat.format;
 
@@ -28,13 +26,11 @@ public class SessionClientImpl implements SessionClient {
 
     private String host;
     private String serviceAuthToken;
-    private Gson gson;
     private Http http;
 
     public SessionClientImpl(final String host, final String serviceAuthToken) {
         this.host = host;
         this.serviceAuthToken = serviceAuthToken;
-        this.gson = new GsonBuilder().registerTypeAdapter(Date.class, new SessionDateFormatter()).create();
         this.http = new Http();
     }
 
@@ -51,14 +47,27 @@ public class SessionClientImpl implements SessionClient {
 
     private SessionCreated postSession(String userEmail) {
         try {
-            String jsonStr = gson.toJson(new CreateNewSession(userEmail));
+            String jsonStr = http.toJson(new CreateNewSession(userEmail));
             HttpPost httpPost = http.createHttpPost(host, "/session", jsonStr);
-
-            return http.doPost(httpPost, SessionCreated.class, checkCreateSessionResponseStatus());
+            return http.doPost(httpPost, createSessionResponseHandler());
         } catch (Exception ex) {
             throw new SessionClientException(ex);
         }
     }
+
+    ResponseHandler<SessionCreated> createSessionResponseHandler() {
+        return (response -> {
+            int status = response.getStatusLine().getStatusCode();
+
+            if (status != HttpStatus.SC_CREATED) {
+                String msg = format("create session returned incorrect status expected 201 but was {0}", status);
+                throw new SessionClientException(msg);
+            }
+
+            return getResponseEntity(response, SessionCreated.class);
+        });
+    }
+
 
     @Override
     public Session getSessionByID(String sessionID) throws SessionClientException {
@@ -68,13 +77,37 @@ public class SessionClientImpl implements SessionClient {
             HttpGet httpGet = http.createHttpGet(host, "/session/" + sessionID);
 
             try {
-                session = http.doGet(httpGet, ZebedeeSession.class, getSessionStatusChecker());
-            } catch (Exception ex) {
-                throw new SessionClientException();
+                session = http.doGet(httpGet, getSessionResponseHandler());
+            } catch (IOException ex) {
+                throw new SessionClientException("TODO", ex);
             }
         }
+
         return session;
     }
+
+    ResponseHandler<ZebedeeSession> getSessionResponseHandler() {
+        return (response -> {
+            ZebedeeSession session = null;
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            switch (statusCode) {
+                case HttpStatus.SC_NOT_FOUND:
+                    LOG.info("no session found for id");
+                    break;
+                case HttpStatus.SC_OK:
+                    LOG.info("found session for id");
+                    session = getResponseEntity(response, ZebedeeSession.class);
+                    break;
+                default:
+                    String error = format("incorrect http status code expected {0} actual {1}",
+                            HttpStatus.SC_OK, statusCode);
+                    throw new SessionClientException(error);
+            }
+            return session;
+        });
+    }
+
 
     @Override
     public Session getSessionByEmail(String email) throws SessionClientException {
@@ -85,7 +118,7 @@ public class SessionClientImpl implements SessionClient {
             HttpGet httpGet = http.createHttpGet(host, uri);
 
             try {
-                session = http.doGet(httpGet, ZebedeeSession.class, getSessionStatusChecker());
+                session = http.doGet(httpGet, getSessionResponseHandler());
             } catch (IOException ex) {
                 throw new SessionClientException("error executing get session by email request", ex);
             }
@@ -99,10 +132,10 @@ public class SessionClientImpl implements SessionClient {
     }
 
     @Override
-    public boolean flushAllSessions() throws SessionClientException {
+    public boolean clear() throws SessionClientException {
         try {
             HttpDelete httpDelete = http.createHttpDelete(host, "/sessions");
-            SimpleMessage body = http.doDelete(httpDelete, SimpleMessage.class, flushAllSessionsStatusChecker());
+            SimpleMessage body = http.doDelete(httpDelete, flushSessionResponseHandler());
             LOG.debug(body.getMessage());
         } catch (IOException ex) {
             throw new SessionClientException("error executing HTTPDelete request", ex);
@@ -110,42 +143,23 @@ public class SessionClientImpl implements SessionClient {
         return true;
     }
 
-    StatusChecker checkCreateSessionResponseStatus() {
-        return (response -> {
-            int status = response.getStatusLine().getStatusCode();
-            if (status != HttpStatus.SC_CREATED) {
-                String msg = format("create session returned incorrect status expected 201 but was {0}", status);
-                throw new SessionClientException(msg);
-            }
-        });
-    }
-
-    StatusChecker getSessionStatusChecker() {
-        return (response -> {
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            switch (statusCode) {
-                case HttpStatus.SC_NOT_FOUND:
-                    LOG.info("no session found for id");
-                    break;
-                case HttpStatus.SC_OK:
-                    LOG.info("found session for id");
-                    break;
-                default:
-                    String error = format("incorrect http status code expected {0} actual {1}",
-                            HttpStatus.SC_OK, statusCode);
-                    throw new SessionClientException(error);
-            }
-        });
-    }
-
-    StatusChecker flushAllSessionsStatusChecker() {
+    ResponseHandler<SimpleMessage> flushSessionResponseHandler() {
         return (response -> {
             int status = response.getStatusLine().getStatusCode();
             if (status != HttpStatus.SC_OK) {
                 String msg = format("incorrect http status code expected 200 actual {0}", status);
                 throw new SessionClientException(msg);
             }
+
+            return getResponseEntity(response, SimpleMessage.class);
         });
+    }
+
+    public <T> T getResponseEntity(CloseableHttpResponse response, Class<T> tClass) throws SessionClientException {
+        try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent())) {
+            return http.fromJson(reader, tClass);
+        } catch (Exception ex) {
+            throw new SessionClientException("error reading content from http response", ex);
+        }
     }
 }

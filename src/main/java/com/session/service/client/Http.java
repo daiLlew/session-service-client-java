@@ -1,6 +1,8 @@
 package com.session.service.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.session.service.json.SessionDateFormatter;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -10,8 +12,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 
 public class Http {
 
@@ -22,7 +25,7 @@ public class Http {
     private Gson gson;
 
     public Http() {
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().registerTypeAdapter(Date.class, new SessionDateFormatter()).create();
     }
 
     public HttpGet createHttpGet(String host, String uri) {
@@ -47,42 +50,39 @@ public class Http {
         return httpDelete;
     }
 
-    public <T> T doGet(HttpGet httpGet, Class<T> tClass, StatusChecker statusChecker) throws IOException {
+    public <T> T doGet(HttpGet httpGet, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpGet)
         ) {
-            statusChecker.check(response);
-            return getResponseEntity(response, tClass);
+            return responseHandler.handleResponse(response);
         }
     }
 
-    public <T> T doPost(HttpPost httpPost, Class<T> tClass, StatusChecker statusChecker) throws IOException {
+    public <T> T doPost(HttpPost httpPost, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpPost)
         ) {
-            statusChecker.check(response);
-            return getResponseEntity(response, tClass);
+            return responseHandler.handleResponse(response);
         }
     }
 
-    public <T> T doDelete(HttpDelete httpDelete, Class<T> tClass, StatusChecker statusChecker) throws IOException {
+    public <T> T doDelete(HttpDelete httpDelete, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpDelete)
         ) {
-            statusChecker.check(response);
-            return getResponseEntity(response, tClass);
+            return responseHandler.handleResponse(response);
         }
     }
 
-    <T> T getResponseEntity(CloseableHttpResponse response, Class<T> tClass) throws IOException {
-        try (InputStreamReader reader = new InputStreamReader(response.getEntity().getContent())) {
-            return gson.fromJson(reader, tClass);
-        } catch (Exception ex) {
-            throw new IOException("error reading content from http response", ex);
-        }
+    public String toJson(Object obj) {
+        return this.gson.toJson(obj);
+    }
+
+    public <T> T fromJson(Reader reader, Class<T> tClass) {
+        return gson.fromJson(reader, tClass);
     }
 
 }
