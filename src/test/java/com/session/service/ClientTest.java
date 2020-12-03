@@ -1,10 +1,17 @@
 package com.session.service;
 
+import com.session.service.client.Http;
+import com.session.service.client.ResponseHandler;
 import com.session.service.client.SessionClient;
 import com.session.service.client.SessionClientImpl;
 import com.session.service.entities.SessionCreated;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -13,7 +20,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ClientTest {
 
     static final String EMAIL = "test@test.com";
@@ -21,13 +31,22 @@ public class ClientTest {
 
     private SessionClient client;
 
+    @Mock
+    private Http http;
+
     @Before
     public void setUp() throws Exception {
-        client = new SessionClientImpl("http://localhost:6666", "");
+        final String host = "http://localhost:6666";
+        client = new SessionClientImpl(host, "", http);
+
+        final String returnedUri = "uri";
+        final String sessionID = "sessionID";
+        Mockito.when(http.post(eq(host), eq("/session"), any(Object.class), ArgumentMatchers.<ResponseHandler<SessionCreated>>any()))
+                .thenReturn(new SessionCreated(returnedUri, sessionID));
     }
 
     @Test
-    public void createSession_shouldCreateNewSession() throws Exception {
+    public void createSession_shouldCreateNewSession() {
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
         assertThat(sessionCreated, is(notNullValue()));
         assertThat(sessionCreated.getId(), not(isEmptyString()));

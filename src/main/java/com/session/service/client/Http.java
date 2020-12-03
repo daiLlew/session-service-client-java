@@ -35,7 +35,7 @@ public class Http {
         return httpGet;
     }
 
-    public HttpPost createHttpPost(String host, String uri, String json) throws UnsupportedEncodingException {
+    private HttpPost createHttpPost(String host, String uri, String json) throws UnsupportedEncodingException {
         HttpPost httpPost = new HttpPost(host + uri);
         httpPost.setEntity(new StringEntity(json));
         httpPost.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
@@ -59,7 +59,7 @@ public class Http {
         }
     }
 
-    public <T> T doPost(HttpPost httpPost, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doPost(HttpPost httpPost, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpPost)
@@ -85,4 +85,9 @@ public class Http {
         return gson.fromJson(reader, tClass);
     }
 
+    public <T> T post(String host, String uri, Object obj, ResponseHandler<T> responseHandler) throws IOException {
+        String jsonStr = toJson(obj);
+        HttpPost httpPost = createHttpPost(host, uri, jsonStr);
+        return doPost(httpPost, responseHandler);
+    }
 }
