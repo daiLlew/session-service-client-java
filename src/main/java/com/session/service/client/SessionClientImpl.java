@@ -28,18 +28,20 @@ public class SessionClientImpl implements SessionClient {
     private String serviceAuthToken;
     private Http http;
 
-    public SessionClientImpl(final String host, final String serviceAuthToken) {
+    public SessionClientImpl(final String host, final String serviceAuthToken, Http http) {
         this.host = host;
         this.serviceAuthToken = serviceAuthToken;
-        this.http = new Http();
+        this.http = http;
     }
 
     @Override
     public SessionCreated createNewSession(String userEmail) throws SessionClientException {
-        SessionCreated sessionCreated = null;
+        SessionCreated sessionCreated;
 
         if (StringUtils.isNotEmpty(userEmail)) {
             sessionCreated = postSession(userEmail);
+        } else {
+            throw new SessionClientException("user email cannot be empty");
         }
 
         return sessionCreated;
@@ -47,9 +49,7 @@ public class SessionClientImpl implements SessionClient {
 
     private SessionCreated postSession(String userEmail) {
         try {
-            String jsonStr = http.toJson(new CreateNewSession(userEmail));
-            HttpPost httpPost = http.createHttpPost(host, "/session", jsonStr);
-            return http.doPost(httpPost, createSessionResponseHandler());
+            return http.post(host, "/sessions", new CreateNewSession(userEmail), createSessionResponseHandler());
         } catch (Exception ex) {
             throw new SessionClientException(ex);
         }
