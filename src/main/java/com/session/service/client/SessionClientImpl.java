@@ -49,7 +49,7 @@ public class SessionClientImpl implements SessionClient {
 
     private SessionCreated postSession(String userEmail) {
         try {
-            return http.post(host, "/sessions", new CreateNewSession(userEmail), createSessionResponseHandler());
+            return http.post(host, "/sessions", new CreateNewSession(userEmail), createSessionResponseHandler(), serviceAuthToken);
         } catch (Exception ex) {
             throw new SessionClientException(ex);
         }

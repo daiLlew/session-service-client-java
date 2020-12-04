@@ -50,7 +50,8 @@ public class ClientTest {
                 eq(HOST),
                 eq("/sessions"),
                 any(Object.class),
-                ArgumentMatchers.<ResponseHandler<SessionCreated>>any()
+                ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
+                any(String.class)
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
