@@ -74,13 +74,16 @@ public class SessionClientImpl implements SessionClient {
         ZebedeeSession session = null;
 
         if (StringUtils.isNotEmpty(sessionID)) {
-            HttpGet httpGet = http.createHttpGet(host, "/session/" + sessionID);
-
             try {
-                session = http.doGet(httpGet, getSessionResponseHandler());
+                session = http.get(host, "/sessions/" + sessionID, getSessionResponseHandler());
             } catch (IOException ex) {
-                throw new SessionClientException("TODO", ex);
+                String msg = format("unable to retrieve session: {0}", ex);
+                throw new SessionClientException(msg);
             }
+        }
+
+        if (session == null) {
+            throw new SessionClientException("invalid session");
         }
 
         return session;
@@ -115,10 +118,9 @@ public class SessionClientImpl implements SessionClient {
 
         if (StringUtils.isNotEmpty(email)) {
             String uri = format("/search?email={0}", email);
-            HttpGet httpGet = http.createHttpGet(host, uri);
 
             try {
-                session = http.doGet(httpGet, getSessionResponseHandler());
+                session = http.get(host, "/sessions/" + email, getSessionResponseHandler());
             } catch (IOException ex) {
                 throw new SessionClientException("error executing get session by email request", ex);
             }
