@@ -117,8 +117,6 @@ public class SessionClientImpl implements SessionClient {
         ZebedeeSession session = null;
 
         if (StringUtils.isNotEmpty(email)) {
-            String uri = format("/search?email={0}", email);
-
             try {
                 session = http.get(host, "/sessions/" + email, getSessionResponseHandler());
             } catch (IOException ex) {
