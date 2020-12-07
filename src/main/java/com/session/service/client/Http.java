@@ -35,7 +35,12 @@ public class Http {
         return doPost(httpPost, responseHandler);
     }
 
-    public HttpGet createHttpGet(String host, String uri) {
+    public <T> T get(String host, String uri, ResponseHandler<T> responseHandler) throws IOException {
+        HttpGet httpGet = createHttpGet(host, uri);
+        return doGet(httpGet, responseHandler);
+    }
+
+    private HttpGet createHttpGet(String host, String uri) {
         HttpGet httpGet = new HttpGet(host + uri);
         httpGet.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
         httpGet.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
@@ -58,7 +63,7 @@ public class Http {
         return httpDelete;
     }
 
-    public <T> T doGet(HttpGet httpGet, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doGet(HttpGet httpGet, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpGet)

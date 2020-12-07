@@ -6,10 +6,8 @@ import com.session.service.client.SessionClient;
 import com.session.service.client.SessionClientImpl;
 import com.session.service.entities.SessionCreated;
 import com.session.service.error.SessionClientException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -21,9 +19,9 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.junit.Assert.assertThrows;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClientTest {
@@ -35,6 +33,7 @@ public class ClientTest {
     static final String SESSION_ID = "sessionsID";
 
     private SessionClient client;
+    private ZebedeeSession zebedeeSession;
 
     @Mock
     private Http http;
@@ -42,6 +41,10 @@ public class ClientTest {
     @Before
     public void setUp() {
         client = new SessionClientImpl(HOST, "1234", http);
+
+        zebedeeSession = new ZebedeeSession();
+        zebedeeSession.setId(SESSION_ID);
+        zebedeeSession.setEmail(EMAIL);
     }
 
     @Test
@@ -55,6 +58,7 @@ public class ClientTest {
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
+        
         assertThat(sessionCreated, is(notNullValue()));
         assertThat(sessionCreated.getId(), is(SESSION_ID));
     }
@@ -63,18 +67,50 @@ public class ClientTest {
     public void createSession_emptyEmailAddress_shouldReturnError() {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.createNewSession(null));
+
         assertThat(sessionClientException.getMessage(), is("user email cannot be empty"));
     }
 
     @Test
-    public void getSessionById_shouldReturnExpectedSession() throws Exception {
-        SessionCreated sessionCreated = client.createNewSession(EMAIL);
-        assertThat(sessionCreated, is(notNullValue()));
-        assertThat(sessionCreated.getId(), not(isEmptyString()));
+    public void getSessionById_shouldReturnExpectedSession() throws IOException {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + SESSION_ID),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenReturn(zebedeeSession);
 
-        Session session = client.getSessionByID(sessionCreated.getId());
+        Session session = client.getSessionByID(SESSION_ID);
+
         assertThat(session, is(notNullValue()));
-        assertThat(session.getId(), equalTo(sessionCreated.getId()));
+        assertThat(session.getId(), equalTo(SESSION_ID));
+    }
+
+    @Test
+    public void getSessionById_whenNullSessionReturned_shouldReturnError() throws IOException {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + SESSION_ID),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenReturn(null);
+
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByID(SESSION_ID));
+
+        assertThat(sessionClientException.getMessage(), is("invalid session"));
+    }
+
+    @Test
+    public void getSessionById_httpThrowsIOException_shouldReturnError() throws IOException {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + SESSION_ID),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenThrow(new IOException());
+
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByID(SESSION_ID));
+
+        assertThat(sessionClientException.getMessage(), not(nullValue()));
     }
 
     @Test
@@ -92,9 +128,9 @@ public class ClientTest {
     public void getSessionByID_timeoutExpired_shouldReturnNotFound() throws Exception {
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
 
-        System.out.println("waiting a bit...");
-        Thread.sleep(SESSION_TIMEOUT_MS);
-        System.out.println("wait ended...");
+        // System.out.println("waiting a bit...");
+        // Thread.sleep(SESSION_TIMEOUT_MS);
+        // System.out.println("wait ended...");
 
         assertThat(client.getSessionByID(sessionCreated.getId()), is(nullValue()));
     }
