@@ -76,7 +76,7 @@ public class SessionClientImpl implements SessionClient {
             try {
                 session = http.get(host, "/sessions/" + sessionID, getSessionResponseHandler());
             } catch (IOException ex) {
-                throw new SessionClientException(format("unable to retrieve session: {0}", ex));
+                throw new SessionClientException("unable to retrieve session", ex);
             }
         }
 
@@ -118,7 +118,7 @@ public class SessionClientImpl implements SessionClient {
             try {
                 session = http.get(host, "/sessions/" + email, getSessionResponseHandler());
             } catch (IOException ex) {
-                throw new SessionClientException("error executing get session by email request", ex);
+                throw new SessionClientException("unable to retrieve session", ex);
             }
         }
         return session;
