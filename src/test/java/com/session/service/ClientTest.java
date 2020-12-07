@@ -96,7 +96,7 @@ public class ClientTest {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(SESSION_ID));
 
-        assertThat(sessionClientException.getMessage(), is("invalid session"));
+        assertThat(sessionClientException.getMessage(), is("session not found"));
     }
 
     @Test
