@@ -60,8 +60,7 @@ public class SessionClientImpl implements SessionClient {
             int status = response.getStatusLine().getStatusCode();
 
             if (status != HttpStatus.SC_CREATED) {
-                String msg = format("create session returned incorrect status expected 201 but was {0}", status);
-                throw new SessionClientException(msg);
+                throw new SessionClientException(format("create session returned incorrect status, expected 201 but was {0}", status));
             }
 
             return getResponseEntity(response, SessionCreated.class);
@@ -77,13 +76,12 @@ public class SessionClientImpl implements SessionClient {
             try {
                 session = http.get(host, "/sessions/" + sessionID, getSessionResponseHandler());
             } catch (IOException ex) {
-                String msg = format("unable to retrieve session: {0}", ex);
-                throw new SessionClientException(msg);
+                throw new SessionClientException(format("unable to retrieve session: {0}", ex));
             }
         }
 
         if (session == null) {
-            throw new SessionClientException("invalid session");
+            throw new SessionClientException("session not found");
         }
 
         return session;
@@ -147,8 +145,7 @@ public class SessionClientImpl implements SessionClient {
         return (response -> {
             int status = response.getStatusLine().getStatusCode();
             if (status != HttpStatus.SC_OK) {
-                String msg = format("incorrect http status code expected 200 actual {0}", status);
-                throw new SessionClientException(msg);
+                throw new SessionClientException(format("incorrect http status code expected 200 actual {0}", status));
             }
 
             return getResponseEntity(response, SimpleMessage.class);

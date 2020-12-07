@@ -58,6 +58,7 @@ public class ClientTest {
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
+        
         assertThat(sessionCreated, is(notNullValue()));
         assertThat(sessionCreated.getId(), is(SESSION_ID));
     }
@@ -66,6 +67,7 @@ public class ClientTest {
     public void createSession_emptyEmailAddress_shouldReturnError() {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.createNewSession(null));
+
         assertThat(sessionClientException.getMessage(), is("user email cannot be empty"));
     }
 
@@ -78,6 +80,7 @@ public class ClientTest {
         )).thenReturn(zebedeeSession);
 
         Session session = client.getSessionByID(SESSION_ID);
+
         assertThat(session, is(notNullValue()));
         assertThat(session.getId(), equalTo(SESSION_ID));
     }
@@ -92,11 +95,12 @@ public class ClientTest {
 
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(SESSION_ID));
+
         assertThat(sessionClientException.getMessage(), is("invalid session"));
     }
 
     @Test
-    public void getSessionById_whenUnableToConnect_shouldReturnError() throws IOException {
+    public void getSessionById_httpThrowsIOException_shouldReturnError() throws IOException {
         Mockito.when(http.get(
                 eq(HOST),
                 eq("/sessions/" + SESSION_ID),
@@ -105,6 +109,7 @@ public class ClientTest {
 
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(SESSION_ID));
+
         assertThat(sessionClientException.getMessage(), not(nullValue()));
     }
 
