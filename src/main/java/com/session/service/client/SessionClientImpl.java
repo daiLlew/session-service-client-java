@@ -108,9 +108,7 @@ public class SessionClientImpl implements SessionClient {
     @Override
     public boolean clear() throws SessionClientException {
         try {
-            HttpDelete httpDelete = http.createHttpDelete(host, "/sessions");
-            SimpleMessage body = http.doDelete(httpDelete, flushSessionResponseHandler());
-            LOG.debug(body.getMessage());
+            http.delete(host, "/sessions", flushSessionResponseHandler(), serviceAuthToken);
         } catch (IOException ex) {
             throw new SessionClientException("error executing HTTPDelete request", ex);
         }
