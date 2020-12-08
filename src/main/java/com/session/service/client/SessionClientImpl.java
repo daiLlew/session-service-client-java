@@ -70,21 +70,12 @@ public class SessionClientImpl implements SessionClient {
 
     @Override
     public Session getSessionByID(String sessionID) throws SessionClientException {
-        ZebedeeSession session = null;
+        return getSession(sessionID);
+    }
 
-        if (StringUtils.isNotEmpty(sessionID)) {
-            try {
-                session = http.get(host, "/sessions/" + sessionID, getSessionResponseHandler());
-            } catch (IOException ex) {
-                throw new SessionClientException(format("unable to retrieve session: {0}", ex));
-            }
-        }
-
-        if (session == null) {
-            throw new SessionClientException("session not found");
-        }
-
-        return session;
+    @Override
+    public Session getSessionByEmail(String email) throws SessionClientException {
+        return getSession(email);
     }
 
     ResponseHandler<ZebedeeSession> getSessionResponseHandler() {
@@ -107,21 +98,6 @@ public class SessionClientImpl implements SessionClient {
             }
             return session;
         });
-    }
-
-
-    @Override
-    public Session getSessionByEmail(String email) throws SessionClientException {
-        ZebedeeSession session = null;
-
-        if (StringUtils.isNotEmpty(email)) {
-            try {
-                session = http.get(host, "/sessions/" + email, getSessionResponseHandler());
-            } catch (IOException ex) {
-                throw new SessionClientException("error executing get session by email request", ex);
-            }
-        }
-        return session;
     }
 
     @Override
@@ -158,5 +134,23 @@ public class SessionClientImpl implements SessionClient {
         } catch (Exception ex) {
             throw new SessionClientException("error reading content from http response", ex);
         }
+    }
+
+    private Session getSession(String sessionIdentifier) {
+        ZebedeeSession session = null;
+
+        if (StringUtils.isNotEmpty(sessionIdentifier)) {
+            try {
+                session = http.get(host, "/sessions/" + sessionIdentifier, getSessionResponseHandler());
+            } catch (IOException ex) {
+                throw new SessionClientException("unable to retrieve session", ex);
+            }
+        }
+
+        if (session == null) {
+            throw new SessionClientException("session not found");
+        }
+
+        return session;
     }
 }

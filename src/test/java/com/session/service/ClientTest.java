@@ -96,7 +96,7 @@ public class ClientTest {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(SESSION_ID));
 
-        assertThat(sessionClientException.getMessage(), is("invalid session"));
+        assertThat(sessionClientException.getMessage(), is("session not found"));
     }
 
     @Test
@@ -115,24 +115,44 @@ public class ClientTest {
 
     @Test
     public void getSessionByEmail_shouldReturnExpectedSession() throws Exception {
-        SessionCreated sessionCreated = client.createNewSession(EMAIL);
-        assertThat(sessionCreated, is(notNullValue()));
-        assertThat(sessionCreated.getId(), not(isEmptyString()));
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + EMAIL),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenReturn(zebedeeSession);
 
         Session session = client.getSessionByEmail(EMAIL);
+
         assertThat(session, is(notNullValue()));
-        assertThat(session.getId(), equalTo(sessionCreated.getId()));
+        assertThat(session.getId(), is(SESSION_ID));
     }
 
     @Test
-    public void getSessionByID_timeoutExpired_shouldReturnNotFound() throws Exception {
-        SessionCreated sessionCreated = client.createNewSession(EMAIL);
+    public void getSessionByEmail_whenNullSessionReturned_shouldReturnError() throws IOException {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + EMAIL),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenReturn(null);
 
-        // System.out.println("waiting a bit...");
-        // Thread.sleep(SESSION_TIMEOUT_MS);
-        // System.out.println("wait ended...");
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByEmail(EMAIL));
 
-        assertThat(client.getSessionByID(sessionCreated.getId()), is(nullValue()));
+        assertThat(sessionClientException.getMessage(), is("session not found"));
+    }
+
+    @Test
+    public void getSessionByEmail_httpThrowsIOException_shouldReturnError() throws IOException {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + EMAIL),
+                ArgumentMatchers.<ResponseHandler<Session>>any()
+        )).thenThrow(new IOException());
+
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByEmail(EMAIL));
+
+        assertThat(sessionClientException.getMessage(), not(nullValue()));
     }
 
     @Test
