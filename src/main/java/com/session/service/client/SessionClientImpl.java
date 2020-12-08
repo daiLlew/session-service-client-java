@@ -136,12 +136,12 @@ public class SessionClientImpl implements SessionClient {
         }
     }
 
-    private Session getSession(String string) {
+    private Session getSession(String sessionIdentifier) {
         ZebedeeSession session = null;
 
-        if (StringUtils.isNotEmpty(string)) {
+        if (StringUtils.isNotEmpty(sessionIdentifier)) {
             try {
-                session = http.get(host, "/sessions/" + string, getSessionResponseHandler());
+                session = http.get(host, "/sessions/" + sessionIdentifier, getSessionResponseHandler());
             } catch (IOException ex) {
                 throw new SessionClientException("unable to retrieve session", ex);
             }
