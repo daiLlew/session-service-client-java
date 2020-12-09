@@ -64,7 +64,6 @@ public class Http {
     private HttpDelete createHttpDelete(String host, String uri, String serviceAuthToken) {
         HttpDelete httpDelete = new HttpDelete(host + uri);
         httpDelete.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
-        httpDelete.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
         httpDelete.setHeader(AUTHORIZATION, "Bearer " + serviceAuthToken);
         return httpDelete;
     }
