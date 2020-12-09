@@ -40,6 +40,11 @@ public class Http {
         return doGet(httpGet, responseHandler);
     }
 
+    public <T> T delete(String host, String uri, ResponseHandler<T> responseHandler, String serviceAuthToken) throws IOException {
+        HttpDelete httpDelete = createHttpDelete(host, uri, serviceAuthToken);
+        return doDelete(httpDelete, responseHandler);
+    }
+
     private HttpGet createHttpGet(String host, String uri) {
         HttpGet httpGet = new HttpGet(host + uri);
         httpGet.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
@@ -56,10 +61,10 @@ public class Http {
         return httpPost;
     }
 
-    public HttpDelete createHttpDelete(String host, String uri) {
+    private HttpDelete createHttpDelete(String host, String uri, String serviceAuthToken) {
         HttpDelete httpDelete = new HttpDelete(host + uri);
         httpDelete.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
-        httpDelete.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
+        httpDelete.setHeader(AUTHORIZATION, "Bearer " + serviceAuthToken);
         return httpDelete;
     }
 
@@ -81,7 +86,7 @@ public class Http {
         }
     }
 
-    public <T> T doDelete(HttpDelete httpDelete, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doDelete(HttpDelete httpDelete, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpDelete)

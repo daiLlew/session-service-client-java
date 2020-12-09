@@ -157,12 +157,46 @@ public class ClientTest {
 
     @Test
     public void clearSessions_shouldBeExpired() throws Exception {
+        Mockito.when(http.post(
+                eq(HOST),
+                eq("/sessions"),
+                any(Object.class),
+                ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
+                any(String.class)
+        )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
+
+        Mockito.when(http.delete(
+                eq(HOST),
+                eq("/sessions"),
+                ArgumentMatchers.<ResponseHandler<Boolean>>any(),
+                any(String.class)
+        )).thenReturn(true);
+
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
+
         assertThat(sessionCreated, is(notNullValue()));
         assertThat(sessionCreated.getId(), not(isEmptyString()));
 
         client.clear();
 
-        assertThat(client.getSessionByEmail(EMAIL), is(nullValue()));
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByEmail(EMAIL));
+
+        assertThat(sessionClientException.getMessage(), is("session not found"));
+    }
+
+    @Test
+    public void clearSessions_shouldReturnError() throws IOException {
+        Mockito.when(http.delete(
+                eq(HOST),
+                eq("/sessions"),
+                ArgumentMatchers.<ResponseHandler<Boolean>>any(),
+                any(String.class)
+        )).thenThrow(new IOException());
+
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.clear());
+
+        assertThat(sessionClientException.getMessage(), is("error executing HTTPDelete request"));
     }
 }
