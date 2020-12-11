@@ -21,6 +21,7 @@ public class Http {
     private static final String ACCEPT_HEADER_NAME = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-type";
     private static final String APPLICATION_JSON = "application/json";
+    private static final String AUTHORIZATION = "Authorization";
 
     private Gson gson;
 
@@ -28,29 +29,46 @@ public class Http {
         this.gson = new GsonBuilder().registerTypeAdapter(Date.class, new SessionDateFormatter()).create();
     }
 
-    public HttpGet createHttpGet(String host, String uri) {
+    public <T> T post(String host, String uri, Object obj, ResponseHandler<T> responseHandler, String serviceAuthToken) throws IOException {
+        String jsonStr = toJson(obj);
+        HttpPost httpPost = createHttpPost(host, uri, jsonStr, serviceAuthToken);
+        return doPost(httpPost, responseHandler);
+    }
+
+    public <T> T get(String host, String uri, ResponseHandler<T> responseHandler) throws IOException {
+        HttpGet httpGet = createHttpGet(host, uri);
+        return doGet(httpGet, responseHandler);
+    }
+
+    public <T> T delete(String host, String uri, ResponseHandler<T> responseHandler, String serviceAuthToken) throws IOException {
+        HttpDelete httpDelete = createHttpDelete(host, uri, serviceAuthToken);
+        return doDelete(httpDelete, responseHandler);
+    }
+
+    private HttpGet createHttpGet(String host, String uri) {
         HttpGet httpGet = new HttpGet(host + uri);
         httpGet.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
         httpGet.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
         return httpGet;
     }
 
-    public HttpPost createHttpPost(String host, String uri, String json) throws UnsupportedEncodingException {
+    private HttpPost createHttpPost(String host, String uri, String json, String serviceAuthToken) throws UnsupportedEncodingException {
         HttpPost httpPost = new HttpPost(host + uri);
         httpPost.setEntity(new StringEntity(json));
         httpPost.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
         httpPost.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
+        httpPost.setHeader(AUTHORIZATION, "Bearer " + serviceAuthToken);
         return httpPost;
     }
 
-    public HttpDelete createHttpDelete(String host, String uri) {
+    private HttpDelete createHttpDelete(String host, String uri, String serviceAuthToken) {
         HttpDelete httpDelete = new HttpDelete(host + uri);
         httpDelete.setHeader(ACCEPT_HEADER_NAME, APPLICATION_JSON);
-        httpDelete.setHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON);
+        httpDelete.setHeader(AUTHORIZATION, "Bearer " + serviceAuthToken);
         return httpDelete;
     }
 
-    public <T> T doGet(HttpGet httpGet, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doGet(HttpGet httpGet, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpGet)
@@ -59,7 +77,7 @@ public class Http {
         }
     }
 
-    public <T> T doPost(HttpPost httpPost, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doPost(HttpPost httpPost, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpPost)
@@ -68,7 +86,7 @@ public class Http {
         }
     }
 
-    public <T> T doDelete(HttpDelete httpDelete, ResponseHandler<T> responseHandler) throws IOException {
+    private <T> T doDelete(HttpDelete httpDelete, ResponseHandler<T> responseHandler) throws IOException {
         try (
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 CloseableHttpResponse response = httpClient.execute(httpDelete)
