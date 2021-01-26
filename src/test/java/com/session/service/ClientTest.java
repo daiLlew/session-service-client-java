@@ -20,14 +20,12 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClientTest {
 
     static final String EMAIL = "test@test.com";
-    static final int SESSION_TIMEOUT_MS = 30000;
     static final String HOST = "http://localhost:24400";
     static final String RETURNED_URI = "uri";
     static final String SESSION_ID = "sessionsID";
@@ -52,9 +50,9 @@ public class ClientTest {
         Mockito.when(http.post(
                 eq(HOST),
                 eq("/sessions"),
-                any(Object.class),
+                any(),
                 ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
-                any(String.class)
+                any()
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
@@ -156,20 +154,34 @@ public class ClientTest {
     }
 
     @Test
+    public void getSessionByIdOrGetSessionByEmail_whenNullIdentifier_shouldReturnError() throws Exception {
+        Mockito.when(http.get(
+                eq(HOST),
+                eq("/sessions/" + null),
+                ArgumentMatchers.any()
+        )).thenReturn(null);
+
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByID(null));
+
+        assertThat(sessionClientException.getMessage(), is("sessionIdentifier expected but is null"));
+    }
+
+    @Test
     public void clearSessions_shouldBeExpired() throws Exception {
         Mockito.when(http.post(
                 eq(HOST),
                 eq("/sessions"),
-                any(Object.class),
+                any(),
                 ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
-                any(String.class)
+                anyString()
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         Mockito.when(http.delete(
                 eq(HOST),
                 eq("/sessions"),
                 ArgumentMatchers.<ResponseHandler<Boolean>>any(),
-                any(String.class)
+                anyString()
         )).thenReturn(true);
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
@@ -191,7 +203,7 @@ public class ClientTest {
                 eq(HOST),
                 eq("/sessions"),
                 ArgumentMatchers.<ResponseHandler<Boolean>>any(),
-                any(String.class)
+                anyString()
         )).thenThrow(new IOException());
 
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
