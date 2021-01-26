@@ -1,17 +1,14 @@
-package com.session.service.client;
+package com.github.onsdigital.session.service.client.client;
 
-import com.session.service.Session;
-import com.session.service.ZebedeeSession;
-import com.session.service.entities.CreateNewSession;
-import com.session.service.entities.SessionCreated;
-import com.session.service.entities.SimpleMessage;
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.client.Session;
+import com.github.onsdigital.session.service.client.ZebedeeSession;
+import com.github.onsdigital.session.service.client.entities.SimpleMessage;
+import com.github.onsdigital.session.service.client.error.SessionClientException;
+import com.github.onsdigital.session.service.client.entities.CreateNewSession;
+import com.github.onsdigital.session.service.client.entities.SessionCreated;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
