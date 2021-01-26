@@ -1,4 +1,4 @@
-package com.session.service.json;
+package com.github.onsdigital.session.service.json;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

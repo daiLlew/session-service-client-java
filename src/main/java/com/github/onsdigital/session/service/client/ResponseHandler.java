@@ -1,6 +1,6 @@
-package com.session.service.client;
+package com.github.onsdigital.session.service.client;
 
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.error.SessionClientException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 @FunctionalInterface
