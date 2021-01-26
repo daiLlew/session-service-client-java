@@ -1,17 +1,14 @@
-package com.session.service.client;
+package com.github.onsdigital.session.service.client;
 
-import com.session.service.Session;
-import com.session.service.ZebedeeSession;
-import com.session.service.entities.CreateNewSession;
-import com.session.service.entities.SessionCreated;
-import com.session.service.entities.SimpleMessage;
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.Session;
+import com.github.onsdigital.session.service.ZebedeeSession;
+import com.github.onsdigital.session.service.entities.SimpleMessage;
+import com.github.onsdigital.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.entities.CreateNewSession;
+import com.github.onsdigital.session.service.entities.SessionCreated;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,14 +132,15 @@ public class SessionClientImpl implements SessionClient {
     }
 
     private Session getSession(String sessionIdentifier) {
-        ZebedeeSession session = null;
+        if (StringUtils.isEmpty(sessionIdentifier)) {
+            throw new SessionClientException("sessionIdentifier expected but is null or empty");
+        }
 
-        if (StringUtils.isNotEmpty(sessionIdentifier)) {
-            try {
-                session = http.get(host, "/sessions/" + sessionIdentifier, getSessionResponseHandler());
-            } catch (IOException ex) {
-                throw new SessionClientException("unable to retrieve session", ex);
-            }
+        ZebedeeSession session;
+        try {
+            session = http.get(host, "/sessions/" + sessionIdentifier, getSessionResponseHandler());
+        } catch (IOException ex) {
+            throw new SessionClientException("unable to retrieve session", ex);
         }
 
         if (session == null) {

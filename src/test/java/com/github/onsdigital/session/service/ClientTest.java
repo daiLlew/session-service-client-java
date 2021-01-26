@@ -1,11 +1,11 @@
-package com.session.service;
+package com.github.onsdigital.session.service;
 
-import com.session.service.client.Http;
-import com.session.service.client.ResponseHandler;
-import com.session.service.client.SessionClient;
-import com.session.service.client.SessionClientImpl;
-import com.session.service.entities.SessionCreated;
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.client.Http;
+import com.github.onsdigital.session.service.client.ResponseHandler;
+import com.github.onsdigital.session.service.client.SessionClient;
+import com.github.onsdigital.session.service.client.SessionClientImpl;
+import com.github.onsdigital.session.service.entities.SessionCreated;
+import com.github.onsdigital.session.service.error.SessionClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,14 +20,12 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClientTest {
 
     static final String EMAIL = "test@test.com";
-    static final int SESSION_TIMEOUT_MS = 30000;
     static final String HOST = "http://localhost:24400";
     static final String RETURNED_URI = "uri";
     static final String SESSION_ID = "sessionsID";
@@ -52,9 +50,9 @@ public class ClientTest {
         Mockito.when(http.post(
                 eq(HOST),
                 eq("/sessions"),
-                any(Object.class),
+                any(),
                 ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
-                any(String.class)
+                any()
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
@@ -156,20 +154,28 @@ public class ClientTest {
     }
 
     @Test
+    public void get_whenNullIdentifier_shouldReturnError() {
+        SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
+                client.getSessionByID(null));
+
+        assertThat(sessionClientException.getMessage(), is("sessionIdentifier expected but is null or empty"));
+    }
+
+    @Test
     public void clearSessions_shouldBeExpired() throws Exception {
         Mockito.when(http.post(
                 eq(HOST),
                 eq("/sessions"),
-                any(Object.class),
+                any(),
                 ArgumentMatchers.<ResponseHandler<SessionCreated>>any(),
-                any(String.class)
+                anyString()
         )).thenReturn(new SessionCreated(RETURNED_URI, SESSION_ID));
 
         Mockito.when(http.delete(
                 eq(HOST),
                 eq("/sessions"),
                 ArgumentMatchers.<ResponseHandler<Boolean>>any(),
-                any(String.class)
+                anyString()
         )).thenReturn(true);
 
         SessionCreated sessionCreated = client.createNewSession(EMAIL);
@@ -191,7 +197,7 @@ public class ClientTest {
                 eq(HOST),
                 eq("/sessions"),
                 ArgumentMatchers.<ResponseHandler<Boolean>>any(),
-                any(String.class)
+                anyString()
         )).thenThrow(new IOException());
 
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->

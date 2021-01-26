@@ -1,11 +1,11 @@
-package com.session.service;
+package com.github.onsdigital.session.service;
 
+import com.github.onsdigital.session.service.client.Http;
+import com.github.onsdigital.session.service.client.SessionClient;
+import com.github.onsdigital.session.service.client.SessionClientImpl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.session.service.client.Http;
-import com.session.service.client.SessionClient;
-import com.session.service.client.SessionClientImpl;
-import com.session.service.entities.SessionCreated;
+import com.github.onsdigital.session.service.entities.SessionCreated;
 
 public class Main {
 

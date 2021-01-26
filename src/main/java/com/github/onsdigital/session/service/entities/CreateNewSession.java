@@ -1,4 +1,4 @@
-package com.session.service.entities;
+package com.github.onsdigital.session.service.entities;
 
 public class CreateNewSession {
 

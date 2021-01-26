@@ -1,8 +1,8 @@
-package com.session.service.client;
+package com.github.onsdigital.session.service.client;
 
-import com.session.service.Session;
-import com.session.service.entities.SessionCreated;
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.Session;
+import com.github.onsdigital.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.entities.SessionCreated;
 
 /**
  * Defines a HTTP client for communicating with the sessions service API.
