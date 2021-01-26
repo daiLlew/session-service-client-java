@@ -1,11 +1,11 @@
-package com.github.onsdigital.session.service.client;
+package com.github.onsdigital.session.service;
 
-import com.github.onsdigital.session.service.client.client.Http;
-import com.github.onsdigital.session.service.client.client.ResponseHandler;
-import com.github.onsdigital.session.service.client.client.SessionClient;
-import com.github.onsdigital.session.service.client.client.SessionClientImpl;
-import com.github.onsdigital.session.service.client.entities.SessionCreated;
-import com.github.onsdigital.session.service.client.error.SessionClientException;
+import com.github.onsdigital.session.service.client.Http;
+import com.github.onsdigital.session.service.client.ResponseHandler;
+import com.github.onsdigital.session.service.client.SessionClient;
+import com.github.onsdigital.session.service.client.SessionClientImpl;
+import com.github.onsdigital.session.service.entities.SessionCreated;
+import com.github.onsdigital.session.service.error.SessionClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
