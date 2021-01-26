@@ -1,4 +1,4 @@
-package com.session.service;
+package com.github.onsdigital.session.service.client;
 
 import java.util.Date;
 

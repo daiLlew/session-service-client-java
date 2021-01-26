@@ -1,11 +1,11 @@
-package com.session.service;
+package com.github.onsdigital.session.service.client;
 
-import com.session.service.client.Http;
-import com.session.service.client.ResponseHandler;
-import com.session.service.client.SessionClient;
-import com.session.service.client.SessionClientImpl;
-import com.session.service.entities.SessionCreated;
-import com.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.client.client.Http;
+import com.github.onsdigital.session.service.client.client.ResponseHandler;
+import com.github.onsdigital.session.service.client.client.SessionClient;
+import com.github.onsdigital.session.service.client.client.SessionClientImpl;
+import com.github.onsdigital.session.service.client.entities.SessionCreated;
+import com.github.onsdigital.session.service.client.error.SessionClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -154,13 +154,7 @@ public class ClientTest {
     }
 
     @Test
-    public void getSessionByIdOrGetSessionByEmail_whenNullIdentifier_shouldReturnError() throws Exception {
-        Mockito.when(http.get(
-                eq(HOST),
-                eq("/sessions/" + null),
-                ArgumentMatchers.any()
-        )).thenReturn(null);
-
+    public void get_whenNullIdentifier_shouldReturnError() {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(null));
 
