@@ -1,11 +1,11 @@
-package com.github.onsdigital.session.service.client.client;
+package com.github.onsdigital.session.service.client;
 
-import com.github.onsdigital.session.service.client.Session;
-import com.github.onsdigital.session.service.client.ZebedeeSession;
-import com.github.onsdigital.session.service.client.entities.SimpleMessage;
-import com.github.onsdigital.session.service.client.error.SessionClientException;
-import com.github.onsdigital.session.service.client.entities.CreateNewSession;
-import com.github.onsdigital.session.service.client.entities.SessionCreated;
+import com.github.onsdigital.session.service.Session;
+import com.github.onsdigital.session.service.ZebedeeSession;
+import com.github.onsdigital.session.service.entities.SimpleMessage;
+import com.github.onsdigital.session.service.error.SessionClientException;
+import com.github.onsdigital.session.service.entities.CreateNewSession;
+import com.github.onsdigital.session.service.entities.SessionCreated;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;

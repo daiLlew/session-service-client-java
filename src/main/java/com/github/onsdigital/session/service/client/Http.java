@@ -1,6 +1,6 @@
-package com.github.onsdigital.session.service.client.client;
+package com.github.onsdigital.session.service.client;
 
-import com.github.onsdigital.session.service.client.json.SessionDateFormatter;
+import com.github.onsdigital.session.service.json.SessionDateFormatter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;

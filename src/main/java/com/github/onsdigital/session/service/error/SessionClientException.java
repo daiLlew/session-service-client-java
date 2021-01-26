@@ -1,4 +1,4 @@
-package com.github.onsdigital.session.service.client.error;
+package com.github.onsdigital.session.service.error;
 
 public class SessionClientException extends RuntimeException {
 
