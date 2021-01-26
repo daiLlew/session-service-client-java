@@ -133,7 +133,7 @@ public class SessionClientImpl implements SessionClient {
 
     private Session getSession(String sessionIdentifier) {
         if (StringUtils.isEmpty(sessionIdentifier)) {
-            throw new SessionClientException("sessionIdentifier expected but is null");
+            throw new SessionClientException("sessionIdentifier expected but is null or empty");
         }
 
         ZebedeeSession session;

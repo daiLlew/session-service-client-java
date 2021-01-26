@@ -158,7 +158,7 @@ public class ClientTest {
         SessionClientException sessionClientException = assertThrows(SessionClientException.class, () ->
                 client.getSessionByID(null));
 
-        assertThat(sessionClientException.getMessage(), is("sessionIdentifier expected but is null"));
+        assertThat(sessionClientException.getMessage(), is("sessionIdentifier expected but is null or empty"));
     }
 
     @Test
