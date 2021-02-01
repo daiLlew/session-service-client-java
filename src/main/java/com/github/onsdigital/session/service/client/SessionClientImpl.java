@@ -143,10 +143,6 @@ public class SessionClientImpl implements SessionClient {
             throw new SessionClientException("unable to retrieve session", ex);
         }
 
-        if (session == null) {
-            throw new SessionClientException("session not found");
-        }
-
         return session;
     }
 }
